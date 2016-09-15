@@ -1,0 +1,13 @@
+browser firefox
+macro f set browser "firefox %u"
+macro e set browser "elinks %u"
+refresh-on-startup yes
+reload-time 20
+reload-threads 2
+confirm-exit yes
+articlelist-format "%4i %f %?T?|%-17T| ?%t %D"
+keep-articles-days 100
+notify-format "newsbeuter: %n unread articles within %f unread feeds"
+notify-program notify-send
+player "padsp mp3blaster"
+

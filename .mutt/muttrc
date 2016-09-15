@@ -1,0 +1,188 @@
+### ~/.mutt/muttrc
+### A well configured muttrc for secure use of GMail
+## Verify mail server names, port numbers, etc if using with Yahoo or other similar webmail services that provide IMAP access
+## Place the sorta script in ~/.mutt/ for alias sort macro to work.
+##It's bound to 0 for use in muttmenu screens.## A brief how-to can be found on the Vinux Wiki 
+## along with a recent copy of my sample muttrc file.
+
+## Files to use
+#source ~/.mutt/aliases
+
+##To use gpg encrypted PW
+set my_tmp=`gpg -o ~/.mutt/.tmp -d ~/.mutt/pass.pgp`
+## decrypted password
+#
+set my_gpass=`awk '/GMail:/ {print $2}' ~/.mutt/.tmp`
+#
+## setting passwords
+set imap_pass = $my_gpass
+set smtp_pass = $my_gpass
+#
+## Deleting .tmp file immidiately
+set my_del=`rm -f ~/.mutt/.tmp`
+
+## Change the following lines to match your Gmail account details
+## For a bit more information and password encryption instructions go to the Mutt set-up article
+## on the Vinux Wiki. http://wiki.vinuxproject.org/mutt_configuration_and_basic_use 
+## Uncomment and edit if YOU DO NOT WANT 2USE ENCRYPTED PASSWD.
+## If you must use pop change imap to pop, change port numbers, etc.
+set imap_user = "zahari.yurukov@gmail.com"
+#set imap_pass = "my_PW"
+set smtp_url = "smtps://zahari.yurukov@gmail.com@smtp.gmail.com:465/"
+#set smtp_pass = "my_PW"
+set from = "zahari.yurukov@gmail.com"
+set realname = "Zahari Yurukov"
+## Comment the next line or change to no to put sig below quoted message(s)
+set sig_on_top = yes
+set signature="~/.mutt/sig"
+
+# Change the following line if you prefer a different editor.
+set editor = "vim"
+
+## Basic config, you can leave this as is in most cases
+# Not sure if timeout and keepalive value tweaking will help intermittent connection issues
+# (time values are in seconds)
+set folder = "imaps://imap.gmail.com:993"
+set spoolfile = "+INBOX"
+set imap_check_subscribed
+set hostname = gmail.com
+set mail_check = 150
+set beep_new
+set connect_timeout = 25
+set timeout = 300
+# Keep IMAP connection alive by polling intermittently
+set imap_keepalive = 180
+# Allow Mutt to open new imap connection automatically
+unset imap_passive
+set postponed = "+[GMail]/Drafts"
+# set postpone=ask-yes
+set record = "+[GMail]/Sent Mail"
+set header_cache=~/.mutt/cache/headers
+set message_cachedir=~/.mutt/cache/bodies
+## You may need to create your tmpdir in some situations.
+set tmpdir = ~/.mutt/tmpdir
+set certificate_file=~/.mutt/certificates
+set alias_file=~/.mutt/aliases
+set move = no
+set honor_followup_to = ask-yes
+## Automatically includes quote of the original msg in replies 
+# set include
+## If you want to be asked whether to include quoted message(s)
+ set include=ask-yes
+## Asks whether to forward non plain text mime types attached as they came or to convert to inline plain text
+set mime_forward = ask-no
+set sort = 'reverse-date-received'
+set sort_aux = 'reverse-last-date-received'
+## The next two are set oposite of default if uncommented. *(needs more study)
+#set strict_threads = yes
+#set sort_re = no
+set auto_tag = yes
+## Reminds you of missing subject&unmodified or empty body with msg sent as default
+set abort_nosubject = ask-no
+set abort_unmodified = ask-no
+ignore "Authentication-Results:"
+ignore "DomainKey-Signature:"
+ignore "DKIM-Signature:"
+hdr_order Date From To Cc Bcc
+my_hdr X-PGP-Key: gpg --recv-keys 1CBA3837 --keyserver hkp://pool.sks-keyservers.net
+set attribution = "\n  %n wrote:\n%d\n"
+## Character or string to appear at the start of quoted lines in replys 
+set indent_string = "> "
+set forward_format = "[FWD: %a] %s"
+set mailcap_path        = ~/.mutt/mailcap
+auto_view text/html
+#set implicit_autoview = yes
+#alternative_order text/plain text/html *
+set folder_format = "%2C %f %8s %t %F %-8.8u %N %d"
+## Scrolls one line at a time, i.e. smoothly scrolls, instead of only moving up or down by whole pages, screen-fulls if you will  
+set menu_scroll = yes
+# Changes the order of columns in the message list
+set index_format="%4C %Z %s %-15.15L %{%b %d %Y} (%?l?%4l&%4c?)"
+
+
+## Some useful extra key bindings
+bind attach <return>    view-mailcap
+bind editor <Tab> complete-query
+bind editor ^T complete
+bind editor <space> noop
+
+##This configuration provides encryption via gpgme&gpg;  auto-signing is default for all.
+##Also stores encrypted mail as such, I.E. sent folder
+## Uncomment the encrypt-to line in ~/.gnupg/gpg.conf and fill in your key-id.
+## Don't forget to replace your-key-id with your key id below in the pgp_sign_as line!
+set pgp_use_gpg_agent = yes
+## Use GPGME
+ set crypt_use_gpgme = yes
+## Sign all email by default
+set crypt_autosign = yes
+ # Encrypt replies to encrypted email
+ set crypt_replyencrypt = yes
+## Attempt to verify email signatures automatically
+ set crypt_verify_sig = yes
+## In case keys can be validated via DNS
+ set crypt_use_pka=yes
+set pgp_sign_as=40B409EA
+## This remembers your email account PW for 5 hours which has its security implications.
+## Capital F should forget passphrase(s) stored in memory.
+set pgp_timeout=0
+set pgp_good_sign="^gpg: Good sig from"
+
+## Keybindings for custom macros that add useful functionality to Mutt 
+## View Documentation in browser so you can use hyperlinks to quickly get to what you need to know
+macro generic,index,pager <f1> "!lynx /usr/share/doc/mutt/manual.html\n" "Show Mutt documentation"
+## Use sorta script to put aliases in alphabetical order
+macro generic,index,pager 0 "!~/.mutt/sorta\n" "Sort Aliases"
+## Turn on fast reply
+macro generic,index,pager + "<enter-command> set fast_reply = yes\n"  
+## Turn off fast reply; show header fields to edit before entering message body
+macro generic,index,pager _ "<enter-command> set fast_reply = no\n"  
+##switch to GUI editor, coded to gedit for the moment
+macro generic,index,pager ge "<enter-command>set editor = \"gedit\"\n" "Use GUI Editor" 
+##switch back to CLI editor, currently hard-coded to nano 
+macro generic,index,pager ^te "<enter-command>set editor = \"nano\"\n" "Use CLI Editor" 
+## Switch signature between above and below quoted message(s)
+macro generic,index,pager Aq "<enter-command> set sig_on_top = yes\n"
+macro generic,index,pager Bq "<enter-command> set sig_on_top = no\n"
+
+## Gmail-style keyboard shortcuts: Some are being revised, so they are commented for now. 
+#macro index,pager y "<enter-command>unset trash\n <delete-message>" "Gmail archive message"
+#macro index,pager d "<enter-command>set trash=\"imaps://imap.gmail.com:993/[Gmail]/Trash\"\n <delete-message>" "Gmail delete message"
+##imaps://imap.gmail.com:993/[Gmail]/Trash\"\n <delete-message>" "Gmail delete message"  
+##imaps://imap.googlemail.com/[GMail]/Bin\"\n <delete-message>" "Gmail delete message"
+macro index,pager gi "<change-folder>=INBOX<enter>" "Go to inbox"
+macro index,pager ga "<change-folder>=[Gmail]/All Mail<enter>" "Go to all mail"
+macro index,pager gd "<change-folder>=[Gmail]/Drafts<enter>" "Go to drafts"
+macro index,pager gS "<change-folder>=[Gmail]/Starred<enter>" "Go to starred messages"
+macro index,pager gs "<change-folder>=[Gmail]/Spam<enter>" "Go to spam"
+macro index,pager gn "<change-folder>=nvda<enter>" "Go to nvda"
+macro index,pager gu "<change-folder>=ubuntu-phone<enter>" "Go to ubuntu-phone"
+macro index,pager gp "<change-folder>=programming<enter>" "Go to programming"
+macro index,pager gf "<change-folder>=facebook<enter>" "Go to facebook"
+macro index,pager gt "<change-folder>=twitter<enter>" "Go to twitter"
+macro index,pager gB "<change-folder>=bezmishka<enter>" "Go to bezmishka"
+macro index,pager gN "<change-folder>=nalafche<enter>" "Go to nalafche"
+macro index,pager gb "<change-folder>=blinux<enter>" "Go to blinux"
+#macro generic,index,pager g2 "<change-folder>=/home/user/muttmail/2read<enter>" "Go to 2read"
+macro index,pager N "<next-unread-mailbox>" "Go to next-unread-mailbox"
+#
+
+### Some useful alt configurations
+## I've left some options that I sometimes switch to in place above commented out for easy changes.
+## Uncomment any of the alt settings found below and paste in to the appropriate section.
+## For desired results do not forget to comment or delete conflicting lines
+## E.G. sign all will obviously override the following option
+## Sign replies to signed messages 
+# set crypt_replysign = yes
+
+ # Encrypt and sign replies to encrypted and signed email
+ # set crypt_replysignencrypted = yes
+
+## Do not encrypt copies of messages in sent mail folder
+#set fcc_clear = no
+
+## A few commands&settings left over from when I used classic gpg instead of the much cleaner gpgme
+## I'm still checking on posible adaptations and or implementations of these with gpgme.
+#set pgp_clearsign_command="gpg --no-verbose --batch --output - --passphrase-fd 0 --armor --textmode --clearsign %?a?-u %a? %f"
+#set pgp_import_command="gpg --no-verbose --import -v %f"
+#set pgp_export_command="gpg --no-verbose --export --armor %r"
+#set fcc-encrypt command="gpg --encrypt-to 0xyour-key-id"

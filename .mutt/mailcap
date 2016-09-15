@@ -1,0 +1,4 @@
+text/html;                      elinks %s; nametemplate=%s.html
+text/html;                      elinks -dump %s; nametemplate=%s.html; copiousoutput
+text/plain; vim%s;
+audio/mp3; padsp mp3blaster %s;
